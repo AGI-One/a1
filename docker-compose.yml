@@ -21,14 +21,7 @@ services:
       - NODE_ENV=production
     env_file:
       - .env
-    volumes:
-      - erpnext-data:/app/frappe-bench
-      - ./modules:/app/modules
     privileged: true  # Required for supervisor and nginx to run properly
-
-volumes:
-  erpnext-data:
-    name: erpnext-production-data
 
 networks:
   database:

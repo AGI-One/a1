@@ -309,7 +309,7 @@ create_site_if_needed() {
             bench --site localhost set-admin-password admin
             install_apps_to_site
             bench update --reset
-            bench --site localhost migrate --admin-password admin
+            bench --site localhost migrate
             break
         else
             retry_count=$((retry_count + 1))

@@ -35,4 +35,4 @@ USER frappe
 EXPOSE 8080 9000 8000
 
 
-CMD ["/startup-prod.sh"]
+CMD ["/startup.sh"]
