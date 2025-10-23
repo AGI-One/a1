@@ -349,11 +349,11 @@ setup_production() {
     
     # Setup sudoers for frappe user
     echo "👤 Setting up sudoers for frappe user..."
-    bench setup sudoers frappe
+    sudo -E env "PATH=$PATH" bench setup sudoers frappe
     
     # Setup production with supervisor and nginx
     echo "🔧 Setting up production with supervisor and nginx..."
-    sudo bench setup production frappe
+    sudo -E env "PATH=$PATH" bench setup production frappe
     
     echo "✅ Production setup completed"
 }

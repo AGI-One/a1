@@ -350,7 +350,7 @@ start_server() {
     echo "   ERPNext will be available at: http://localhost:8080"
     echo "   Default credentials: Administrator / admin"
     cd /app/frappe-bench
-    
+    sudo chown -R frappe:frappe /var/log/supervisor/
     # Check environment variable to determine which command to run
     echo "🔥 Starting in development mode with auto-reload..."
     # if command -v watchexec >/dev/null 2>&1; then

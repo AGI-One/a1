@@ -27,7 +27,7 @@ case "$env" in
     ;;
   prod)
     echo "🚀 Starting ERPNext in production mode..."
-    env -i PATH="$PATH" HOME="$HOME" docker compose -f docker-compose.yml up --build -d
+    env -i PATH="$PATH" HOME="$HOME" docker compose -f docker-compose.yml up --build
     ;;
   *)
     echo "❌ Environment not found! Please choose one of: [local, localbuild, prod]"

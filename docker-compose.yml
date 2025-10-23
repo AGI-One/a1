@@ -21,7 +21,13 @@ services:
       - NODE_ENV=production
     env_file:
       - .env
+    volumes:
+      - agi-next:/app
+      - ./modules.json:/app/modules.json
     privileged: true  # Required for supervisor and nginx to run properly
+
+volumes:
+  agi-next:
 
 networks:
   database:
