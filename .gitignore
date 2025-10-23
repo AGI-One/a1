@@ -1,3 +1,4 @@
 .env
 modules/*
 modules.json
+.DS_Store

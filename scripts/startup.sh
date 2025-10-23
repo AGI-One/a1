@@ -209,10 +209,13 @@ install_modules_if_needed() {
                 if [ -d "/app/frappe-bench/apps/frappe" ]; then
                     echo "   📦 Installing dependencies for local module: $name"
                     cd "$apps_path"
+                    python3 -m venv env
+                    source env/bin/activate
                     if pip install -e .; then
                         echo "   ✅ Successfully pip installed local module: $name"
                         # Setup requirements for the local module
                         echo "   🔧 Setting up requirements for: $name"
+                        cd /app/frappe-bench
                         if bench setup requirements; then
                             echo "   ✅ Requirements setup completed for: $name"
                         else
@@ -224,7 +227,6 @@ install_modules_if_needed() {
                             exit 1
                         fi
                     fi
-                    cd /app/frappe-bench
                 else
                     echo "   ⏳ Will install dependencies after frappe framework is ready"
                 fi
