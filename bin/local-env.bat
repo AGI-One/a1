@@ -4,11 +4,11 @@ REM Load environment variables from .env file for Windows
 setlocal enabledelayedexpansion
 
 if not exist ".env" (
-    echo ? File .env không t?n t?i.
+    echo ? File .env khï¿½ng t?n t?i.
     exit /b 1
 )
 
-echo ?? ?ang load bi?n t? .env vào môi tr??ng hi?n t?i...
+echo ?? ?ang load bi?n t? .env vï¿½o mï¿½i tr??ng hi?n t?i...
 
 REM Read .env file and set environment variables
 for /f "usebackq tokens=1,2 delims==" %%a in (".env") do (
@@ -20,7 +20,7 @@ for /f "usebackq tokens=1,2 delims==" %%a in (".env") do (
     )
 )
 
-echo ? Bi?n môi tr??ng ?ã ???c load.
+echo ? Bi?n mï¿½i tr??ng ?ï¿½ ???c load.
 
 REM Export variables to calling environment
 endlocal & (
