@@ -15,7 +15,7 @@ if "%env%"=="local" (
     REM Create database directories and start database services
     call make win-dbup
     echo    Starting ERPNext app...
-    docker compose -f docker-compose.yml -f docker-compose.local.yml up
+    docker compose -f docker-compose.local.yml up
     goto :eof
 )
 
@@ -25,7 +25,7 @@ if "%env%"=="localbuild" (
     REM Create database directories and start database services
     call make win-dbup
     echo    Building and starting ERPNext app...
-    docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+    docker compose -f docker-compose.local.yml up --build
     goto :eof
 )
 

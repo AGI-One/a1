@@ -15,7 +15,7 @@ case "$env" in
     # Create database directories and start database services
     make dbup
     echo "   Starting ERPNext app..."
-    env -i PATH="$PATH" HOME="$HOME" docker compose -f docker-compose.yml -f docker-compose.local.yml up
+    env -i PATH="$PATH" HOME="$HOME" docker compose -f docker-compose.local.yml up
     ;;
   localbuild)
     echo "🚀 Starting ERPNext in local development mode with rebuild..."
@@ -23,7 +23,7 @@ case "$env" in
     # Create database directories and start database services
     make dbup
     echo "   Building and starting ERPNext app..."
-    env -i PATH="$PATH" HOME="$HOME" docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+    env -i PATH="$PATH" HOME="$HOME" docker compose -f docker-compose.local.yml up --build
     ;;
   prod)
     echo "🚀 Starting ERPNext in production mode..."
