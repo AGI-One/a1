@@ -207,15 +207,24 @@ install_modules_if_needed() {
                 
                 # Install module dependencies if frappe-bench is ready
                 if [ -d "/app/frappe-bench/apps/frappe" ]; then
-                    cd /app/frappe-bench
-                    if pip install -e "$apps_path"; then
-                        echo "   ✅ Successfully installed local module: $name"
+                    echo "   📦 Installing dependencies for local module: $name"
+                    cd "$apps_path"
+                    if pip install -e .; then
+                        echo "   ✅ Successfully pip installed local module: $name"
+                        # Setup requirements for the local module
+                        echo "   🔧 Setting up requirements for: $name"
+                        if bench setup requirements; then
+                            echo "   ✅ Requirements setup completed for: $name"
+                        else
+                            echo "   ⚠️ Failed to setup requirements for: $name, continuing..."
+                        fi
                     else
                         echo "   ⚠️ Failed to install local module dependencies: $name"
                         if [ "$required" = "true" ]; then
                             exit 1
                         fi
                     fi
+                    cd /app/frappe-bench
                 else
                     echo "   ⏳ Will install dependencies after frappe framework is ready"
                 fi
@@ -229,21 +238,43 @@ install_modules_if_needed() {
     
     # Install dependencies for local modules that were processed before frappe was ready
     if [ -d "/app/frappe-bench/apps/frappe" ]; then
-        echo "🔧 Installing dependencies for local modules..."
-        cd /app/frappe-bench
+        echo "🔧 Installing dependencies for deferred local modules..."
         jq -c '.modules[] | select(.type == "local")' "$MODULES_CONFIG" | while IFS= read -r module; do
             local name=$(echo "$module" | jq -r '.name')
             local apps_path="/app/frappe-bench/apps/$name"
             
+            # Check if this module was deferred (symlink exists but not installed yet)
             if [ -L "$apps_path" ] || [ -d "$apps_path" ]; then
-                echo "   📦 Installing dependencies for: $name"
-                if pip install -e "$apps_path" 2>/dev/null; then
-                    echo "   ✅ Dependencies installed for: $name"
+                # Check if already installed by looking for .egg-info or __pycache__
+                if [ ! -d "$apps_path"/*.egg-info ] && [ ! -d "$apps_path"/__pycache__ ]; then
+                    echo "   📦 Installing deferred dependencies for: $name"
+                    cd "$apps_path"
+                    if pip install -e . 2>/dev/null; then
+                        echo "   ✅ Dependencies installed for: $name"
+                        # Setup requirements for each local module
+                        echo "   🔧 Setting up requirements for: $name"
+                        if bench setup requirements 2>/dev/null; then
+                            echo "   ✅ Requirements setup completed for: $name"
+                        else
+                            echo "   ⚠️ Failed to setup requirements for: $name, continuing..."
+                        fi
+                    else
+                        echo "   ⚠️ Failed to install dependencies for: $name"
+                    fi
                 else
-                    echo "   ⚠️ Failed to install dependencies for: $name"
+                    echo "   ✅ Dependencies already installed for: $name"
                 fi
             fi
         done
+        
+        # Run overall bench setup requirements to ensure all dependencies are resolved
+        echo "🔧 Running overall bench setup requirements..."
+        cd /app/frappe-bench
+        if bench setup requirements 2>/dev/null; then
+            echo "✅ Overall requirements setup completed"
+        else
+            echo "⚠️ Some requirements setup failed, but continuing..."
+        fi
     fi
     
     # Create apps.txt after all modules are installed
