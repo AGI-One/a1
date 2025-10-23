@@ -24,6 +24,7 @@ services:
     volumes:
       - agi-next:/app
       - ./modules:/app/modules
+      - ./modules.json:/app/modules.json
 volumes:
   agi-next:
 
