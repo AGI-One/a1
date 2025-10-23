@@ -1,0 +1,57 @@
+{
+  "modules": [
+    {
+      "name": "frappe",
+      "type": "git",
+      "repository": "https://github.com/frappe/frappe.git",
+      "branch": "version-15",
+      "required": true,
+      "description": "Core Frappe framework"
+    },
+    {
+      "name": "erpnext",
+      "type": "git",
+      "repository": "https://github.com/frappe/erpnext.git",
+      "branch": "version-15",
+      "required": true,
+      "description": "ERPNext application"
+    },
+    {
+      "name": "hrms",
+      "type": "git",
+      "repository": "https://github.com/frappe/hrms.git",
+      "branch": "version-15",
+      "required": false,
+      "description": "Human Resource Management System"
+    },
+    {
+      "name": "crm",
+      "type": "git",
+      "repository": "https://github.com/frappe/crm.git",
+      "branch": "main",
+      "required": false,
+      "description": "Customer Relationship Management"
+    },
+    {
+      "name": "lms",
+      "type": "git",
+      "repository": "https://github.com/frappe/lms.git",
+      "branch": "main",
+      "required": false,
+      "description": "Learning Management System"
+    },
+    {
+      "name": "custom_module_example",
+      "type": "local",
+      "path": "modules/custom_module_example",
+      "required": false,
+      "description": "Example custom module from local source"
+    }
+  ],
+  "config": {
+    "frappe_version": "version-15",
+    "python_version": "3.11",
+    "node_version": "18",
+    "apps_txt_order": ["frappe", "erpnext", "hrms", "crm", "lms"]
+  }
+}

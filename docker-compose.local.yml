@@ -1,0 +1,19 @@
+services:
+  erpnext-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    container_name: erpnext-app
+    restart: unless-stopped
+    ports:
+      - "8080:8000"
+    environment:
+      - FRAPPE_APP_PORT=8000
+      - FRAPPE_APP_WORKERS=1
+      - FRAPPE_APP_ENABLE_DEBUG=1
+      - ENVIRONMENT=development
+    volumes:
+      - agi-next:/app
+      - ./modules:/app/modules
+volumes:
+  agi-next:

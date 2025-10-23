@@ -1,0 +1,35 @@
+# Single-stage Dockerfile for local development with auto-reload
+FROM frappe/bench:v5.25.11
+
+USER root
+# RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+# ENV PATH="/root/.cargo/bin:$PATH"
+
+# RUN cargo install watchexec-cli
+
+# Install additional tools for development
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    jq \
+    netcat-openbsd \
+    mariadb-client \
+    libmariadb-dev libmariadb-dev-compat \
+    && rm -rf /var/lib/apt/lists/*
+
+# Verify watchexec is installed and working
+# RUN watchexec --version && echo "✅ watchexec is ready for auto-reload"
+
+USER root
+# Copy startup script
+COPY scripts/startup.sh /startup.sh
+RUN chmod +x /startup.sh
+
+USER frappe
+# Copy application code
+WORKDIR /app
+COPY . .
+# Expose port
+EXPOSE 8080 9000 8000
+
+CMD ["/startup.sh"]

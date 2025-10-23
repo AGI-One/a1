@@ -1,0 +1,26 @@
+services:
+  erpnext-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    restart: always
+    networks:
+      - database
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ports:
+      - "8080:8000"
+    environment:
+      - FRAPPE_APP_PORT=8000
+      - FRAPPE_APP_WORKERS=2
+      - ENVIRONMENT=production
+    env_file:
+      - .env
+
+networks:
+  database:
+    name: database
+    external: true
