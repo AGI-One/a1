@@ -1,0 +1,44 @@
+# Force all files to use LF line endings
+* text=auto eol=lf
+
+# Specific file types
+*.sh text eol=lf
+*.bash text eol=lf
+*.py text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.sql text eol=lf
+*.conf text eol=lf
+*.cnf text eol=lf
+*.ini text eol=lf
+*.env text eol=lf
+*.example text eol=lf
+
+# Docker files
+Dockerfile* text eol=lf
+docker-compose*.yml text eol=lf
+.dockerignore text eol=lf
+
+# Makefile
+Makefile text eol=lf
+*.mk text eol=lf
+
+# Git files
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
+# Binary files (no line ending conversion)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
