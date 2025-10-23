@@ -35,12 +35,12 @@ Modules được tải từ Git repository:
 
 ```json
 {
-  "name": "erpnext",
+  "name": "hrms",
   "type": "git",
-  "repository": "https://github.com/frappe/erpnext.git",
+  "repository": "https://github.com/frappe/hrms.git",
   "branch": "version-15",
-  "required": true,
-  "description": "ERPNext application"
+  "required": false,
+  "description": "Human Resource Management System"
 }
 ```
 
@@ -49,13 +49,15 @@ Modules từ thư mục local trong `modules/`:
 
 ```json
 {
-  "name": "custom_module",
+  "name": "erpnext",
   "type": "local", 
-  "path": "modules/custom_module",
+  "path": "modules/erpnext",
   "required": false,
-  "description": "Custom module"
+  "description": "ERPNext application from local source"
 }
 ```
+
+**Lưu ý**: ERPNext trong dự án này được cấu hình như local module để hỗ trợ development và customization.
 
 ## Cấu trúc thư mục Local Modules
 
@@ -63,14 +65,16 @@ Mỗi local module cần có cấu trúc sau trong thư mục `modules/`:
 
 ```
 modules/
-├── custom_module_example/
+├── erpnext/                        # ERPNext local module
 │   ├── pyproject.toml              # Cấu hình Python package
 │   ├── README.md                   # Tài liệu
-│   └── custom_module_example/      # Package chính
+│   └── erpnext/                    # Package chính
 │       ├── __init__.py            # File khởi tạo
 │       ├── hooks.py               # Frappe hooks
 │       └── modules.txt            # Danh sách modules
 ```
+
+**Ví dụ thực tế**: Xem thư mục `modules/erpnext/` để tham khảo cấu trúc hoàn chỉnh của một local module.
 
 ## Cách thêm module mới
 
@@ -79,23 +83,29 @@ Chỉnh sửa `modules.json`:
 
 ```json
 {
-  "name": "new_module",
+  "name": "custom_app",
   "type": "git",
-  "repository": "https://github.com/user/new_module.git", 
+  "repository": "https://github.com/user/custom_app.git", 
   "branch": "main",
   "required": false,
-  "description": "Module mới"
+  "description": "Custom application"
 }
+```
+
+Sau đó rebuild container để áp dụng thay đổi:
+```bash
+docker-compose down
+docker-compose up -d
 ```
 
 ### 2. Thêm Local Module
 
 1. Tạo thư mục module:
 ```bash
-mkdir modules/my_custom_module
+mkdir -p modules/my_custom_module
 ```
 
-2. Tạo cấu trúc files cần thiết (xem ví dụ trong `modules/custom_module_example/`)
+2. Tạo cấu trúc files cần thiết (tham khảo `modules/erpnext/` để xem cấu trúc chi tiết)
 
 3. Thêm vào `modules.json`:
 ```json
@@ -122,8 +132,8 @@ volumes:
 
 ### Live Reload Workflow:
 
-1. **Host**: Bạn edit code trong `./modules/custom_module_example/`
-2. **Container**: Script tạo symlink `/app/frappe-bench/apps/custom_module_example -> /app/modules/custom_module_example`
+1. **Host**: Bạn edit code trong `./modules/erpnext/` hoặc local module khác
+2. **Container**: Script tạo symlink `/app/frappe-bench/apps/erpnext -> /app/modules/erpnext`
 3. **Result**: Thay đổi code trên host được reflect ngay lập tức trong container
 
 ### Lợi ích:
@@ -170,4 +180,65 @@ Script sẽ kiểm tra:
 
 ## Ví dụ hoàn chỉnh
 
-Xem file `modules.json` và thư mục `modules/custom_module_example/` để tham khảo cách cấu hình và tạo local module.
+Xem file `modules.json` để tham khảo cấu hình hiện tại của dự án, bao gồm:
+- **frappe**: Core framework (Git module, required)
+- **erpnext**: ERP application (Local module để development)
+- **hrms**: Human Resource Management (Git module)
+- **crm**: Customer Relationship Management (Git module)
+- **lms**: Learning Management System (Git module)
+
+Thư mục `modules/erpnext/` chứa ví dụ hoàn chỉnh về cấu trúc của một local module.
+
+## Modules hiện tại trong dự án
+
+```json
+{
+  "modules": [
+    {
+      "name": "frappe",
+      "type": "git",
+      "repository": "https://github.com/frappe/frappe.git",
+      "branch": "version-15",
+      "required": true,
+      "description": "Core Frappe framework"
+    },
+    {
+      "name": "erpnext",
+      "type": "local",
+      "path": "modules/erpnext",
+      "required": false,
+      "description": "ERPNext application from local source"
+    },
+    {
+      "name": "hrms",
+      "type": "git",
+      "repository": "https://github.com/frappe/hrms.git",
+      "branch": "version-15",
+      "required": false,
+      "description": "Human Resource Management System"
+    },
+    {
+      "name": "crm",
+      "type": "git",
+      "repository": "https://github.com/frappe/crm.git",
+      "branch": "main",
+      "required": false,
+      "description": "Customer Relationship Management"
+    },
+    {
+      "name": "lms",
+      "type": "git",
+      "repository": "https://github.com/frappe/lms.git",
+      "branch": "main",
+      "required": false,
+      "description": "Learning Management System"
+    }
+  ],
+  "config": {
+    "frappe_version": "version-15",
+    "python_version": "3.11",
+    "node_version": "18",
+    "apps_txt_order": ["frappe", "erpnext", "hrms", "crm", "lms"]
+  }
+}
+```

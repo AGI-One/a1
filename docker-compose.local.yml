@@ -5,6 +5,13 @@ services:
       dockerfile: Dockerfile.local
     container_name: erpnext-app
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - database
     ports:
       - "8080:8000"
     environment:
@@ -12,8 +19,15 @@ services:
       - FRAPPE_APP_WORKERS=1
       - FRAPPE_APP_ENABLE_DEBUG=1
       - ENVIRONMENT=development
+    env_file:
+      - .env
     volumes:
       - agi-next:/app
       - ./modules:/app/modules
 volumes:
   agi-next:
+
+networks:
+  database:
+    name: database
+    external: true
