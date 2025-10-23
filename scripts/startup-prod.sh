@@ -2,7 +2,7 @@
 
 set -e
 
-echo "🚀 Starting ERPNext Local Development Environment..."
+echo "🚀 Starting ERPNext Production Environment..."
 
 # Initialize log file
 LOG_FILE="/app/frappe-bench/startup.log"
@@ -64,7 +64,7 @@ check_bench_workspace() {
     if [ -d "/app/frappe-bench/apps/frappe" ]; then
         echo "✅ frappe-bench with Frappe framework already exists"
         cd /app/frappe-bench
-        elif [ -d "/app/frappe-bench" ]; then
+    elif [ -d "/app/frappe-bench" ]; then
         echo "⚠️ frappe-bench exists but Frappe framework is missing"
     else
         echo "📦 frappe-bench workspace will be created during module installation"
@@ -162,8 +162,8 @@ install_modules_if_needed() {
                         echo "   ⚠️ Failed to install optional module: $name, continuing..."
                     fi
                 fi
-            ;;
-            
+                ;;
+                
             "local")
                 local local_path=$(echo "$module" | jq -r '.path')
                 local source_path="/app/$local_path"
@@ -193,13 +193,13 @@ install_modules_if_needed() {
                 
                 # Remove existing if it's not a symlink (could be a directory from previous runs)
                 if [ -d "$apps_path" ] && [ ! -L "$apps_path" ]; then
-                    echo "   �️ Removing existing directory: $apps_path"
+                    echo "   🗑️ Removing existing directory: $apps_path"
                     rm -rf "$apps_path"
                 fi
                 
                 # Create symlink for live development (changes in host will reflect immediately)
                 if [ ! -L "$apps_path" ]; then
-                    echo "   � Creating symlink for live development: $apps_path -> $source_path"
+                    echo "   🔗 Creating symlink for live development: $apps_path -> $source_path"
                     ln -sf "$source_path" "$apps_path"
                 else
                     echo "   ✅ Symlink already exists: $apps_path"
@@ -209,8 +209,6 @@ install_modules_if_needed() {
                 if [ -d "/app/frappe-bench/apps/frappe" ]; then
                     echo "   📦 Installing dependencies for local module: $name"
                     cd "$apps_path"
-                    python3 -m venv env
-                    source env/bin/activate
                     if pip install -e .; then
                         echo "   ✅ Successfully pip installed local module: $name"
                         # Setup requirements for the local module
@@ -230,11 +228,11 @@ install_modules_if_needed() {
                 else
                     echo "   ⏳ Will install dependencies after frappe framework is ready"
                 fi
-            ;;
-            
+                ;;
+                
             *)
                 echo "   ⚠️ Unknown module type: $type for module $name"
-            ;;
+                ;;
         esac
     done
     
@@ -344,26 +342,47 @@ install_apps_to_site() {
     echo "✅ App installation to site completed"
 }
 
-# Function to start development server
-start_server() {
-    echo "🔥 Starting development server..."
-    echo "   ERPNext will be available at: http://localhost:8080"
-    echo "   Default credentials: Administrator / admin"
+# Function to setup production environment
+setup_production() {
+    echo "🚀 Setting up production environment..."
     cd /app/frappe-bench
     
-    # Check environment variable to determine which command to run
-    echo "🔥 Starting in development mode with auto-reload..."
-    # if command -v watchexec >/dev/null 2>&1; then
-    #     echo "👀 Starting with auto-reload (watchexec)..."
-    #     exec watchexec \
-    #         --restart \
-    #         --exts py,js,html,json,css \
-    #         --ignore '.git/*' '*.pyc' '__pycache__/*' '.pytest_cache/*' 'node_modules/*' 'build/*' 'dist/*' 'logs/*' '*.log' '.vscode/*' \
-    #         -- bench start
-    # else
-    #     echo "⚠️ watchexec not found, falling back to normal bench start..."
-    exec bench start
-    # fi
+    # Setup sudoers for frappe user
+    echo "👤 Setting up sudoers for frappe user..."
+    bench setup sudoers frappe
+    
+    # Setup production with supervisor and nginx
+    echo "🔧 Setting up production with supervisor and nginx..."
+    sudo bench setup production frappe
+    
+    echo "✅ Production setup completed"
+}
+
+# Function to start production server
+start_production_server() {
+    echo "🚀 Starting production server..."
+    echo "   ERPNext will be available at: http://localhost:8080"
+    echo "   Default credentials: Administrator / admin"
+    
+    cd /app/frappe-bench
+    
+    # Start supervisor to manage processes
+    echo "📊 Starting supervisor..."
+    sudo supervisorctl reread
+    sudo supervisorctl update
+    sudo supervisorctl start all
+    
+    # Start nginx
+    echo "🌐 Starting nginx..."
+    sudo service nginx start
+    
+    echo "✅ Production server started successfully!"
+    echo "📊 Check supervisor status: sudo supervisorctl status"
+    echo "🌐 Check nginx status: sudo service nginx status"
+    
+    # Keep container running by tailing logs
+    echo "📝 Following supervisor logs..."
+    tail -f /app/frappe-bench/logs/*.log
 }
 
 # Main execution
@@ -374,8 +393,9 @@ main() {
     install_modules_if_needed
     setup_site_config
     create_site_if_needed
-    start_server
+    setup_production
+    start_production_server
 }
 
-trap 'echo "🛑 Shutting down..."; exit 0' SIGTERM SIGINT
+trap 'echo "🛑 Shutting down..."; sudo supervisorctl stop all; sudo service nginx stop; exit 0' SIGTERM SIGINT
 main "$@"

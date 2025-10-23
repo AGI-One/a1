@@ -1,13 +1,9 @@
-# Single-stage Dockerfile for local development with auto-reload
+# Production Dockerfile for ERPNext deployment
 FROM frappe/bench:v5.25.11
 
 USER root
-# RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
-# ENV PATH="/root/.cargo/bin:$PATH"
 
-# RUN cargo install watchexec-cli
-
-# Install additional tools for development
+# Install additional tools and production dependencies
 RUN apt-get update && apt-get install -y \
     curl \
     wget \
@@ -15,15 +11,18 @@ RUN apt-get update && apt-get install -y \
     netcat-openbsd \
     mariadb-client \
     libmariadb-dev libmariadb-dev-compat \
+    supervisor \
+    nginx \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
 
-# Verify watchexec is installed and working
-# RUN watchexec --version && echo "✅ watchexec is ready for auto-reload"
+# Setup frappe user with sudo privileges
+RUN usermod -aG sudo frappe && \
+    echo "frappe ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-# Copy startup script
-COPY scripts/startup.sh /startup.sh
+# Copy startup scripts
+COPY scripts/startup-prod.sh /startup.sh
 RUN chmod +x /startup.sh
-RUN sudo usermod -aG sudo frappe
 
 USER frappe
 # Copy application code

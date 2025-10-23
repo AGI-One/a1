@@ -12,13 +12,23 @@ services:
         max-size: "10m"
         max-file: "3"
     ports:
-      - "8080:8000"
+      - "8080:80"    # Nginx port for production
+      - "8000:8000"  # Backend port
     environment:
       - FRAPPE_APP_PORT=8000
       - FRAPPE_APP_WORKERS=2
       - ENVIRONMENT=production
+      - NODE_ENV=production
     env_file:
       - .env
+    volumes:
+      - erpnext-data:/app/frappe-bench
+      - ./modules:/app/modules
+    privileged: true  # Required for supervisor and nginx to run properly
+
+volumes:
+  erpnext-data:
+    name: erpnext-production-data
 
 networks:
   database:

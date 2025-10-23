@@ -242,3 +242,49 @@ Thư mục `modules/erpnext/` chứa ví dụ hoàn chỉnh về cấu trúc c�
   }
 }
 ```
+
+## Development vs Production Mode
+
+### Development Mode (Local)
+Sử dụng `docker-compose.local.yml` và `Dockerfile.local`:
+- **Script**: `scripts/startup.sh`
+- **Lệnh chạy**: `bench start`
+- **Cổng**: 8080 (direct to bench)
+- **Live reload**: Hỗ trợ thay đổi code real-time
+- **Volume mapping**: Local modules được mount để development
+
+```bash
+# Chạy development mode
+docker-compose -f docker-compose.local.yml up -d
+```
+
+### Production Mode
+Sử dụng `docker-compose.yml` và `Dockerfile.prod`:
+- **Script**: `scripts/startup-prod.sh`
+- **Lệnh chạy**: `sudo bench setup production frappe`
+- **Cổng**: 80 (nginx), 8000 (backend)
+- **Services**: Supervisor + Nginx
+- **Data persistence**: Named volume `erpnext-production-data`
+
+```bash
+# Chạy production mode
+docker-compose up -d
+
+# Kiểm tra status
+docker-compose exec erpnext-app sudo supervisorctl status
+docker-compose exec erpnext-app sudo service nginx status
+```
+
+### So sánh chi tiết
+
+| Tính năng | Development | Production |
+|-----------|------------|------------|
+| Dockerfile | `Dockerfile.local` | `Dockerfile.prod` |
+| Startup Script | `startup.sh` | `startup-prod.sh` |
+| Bench Mode | Development (`bench start`) | Production (`bench setup production`) |
+| Web Server | Flask Dev Server | Nginx + Gunicorn |
+| Process Manager | None | Supervisor |
+| Port Mapping | 8080:8000 | 8080:80, 8000:8000 |
+| Auto-reload | Yes (có thể thêm watchexec) | No |
+| Volumes | Module mount cho live coding | Named volume cho persistence |
+| Privileges | Normal | Privileged (cho supervisor/nginx) |
