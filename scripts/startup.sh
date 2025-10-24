@@ -294,11 +294,31 @@ install_modules_if_needed() {
 # Function to create site and install apps
 create_site_if_needed() {
     echo "🏗️ Checking site 'localhost'..."
-    if [ -d "/app/frappe-bench/sites/localhost/" ]; then
-        echo "⚠️ Site 'localhost' exists, recreating with --force..."
-        bench new-site localhost --force --admin-password admin
-        bench --site localhost set-admin-password admin
-        install_apps_to_site
+    
+    # Check if site exists with actual data (not just empty directory)
+    if [ -d "/app/frappe-bench/sites/localhost/" ] && [ -f "/app/frappe-bench/sites/localhost/site_config.json" ]; then
+        echo "✅ Site 'localhost' already exists with data, preserving it..."
+        echo "🔄 Running migrations to update schema..."
+        cd /app/frappe-bench
+        bench --site localhost migrate
+        
+        # Verify all apps are installed
+        echo "📱 Checking installed apps..."
+        INSTALLED_APPS=$(bench --site localhost list-apps 2>/dev/null || echo "")
+        
+        # Install any missing apps from apps.txt
+        if [ -f "/app/frappe-bench/sites/apps.txt" ]; then
+            while IFS= read -r app_name; do
+                if [ -n "$app_name" ] && [ -d "/app/frappe-bench/apps/$app_name" ]; then
+                    if ! echo "$INSTALLED_APPS" | grep -q "^$app_name$"; then
+                        echo "   📱 Installing missing app: $app_name"
+                        bench --site localhost install-app "$app_name" || echo "   ⚠️ Failed to install $app_name"
+                    fi
+                fi
+            done < /app/frappe-bench/sites/apps.txt
+        fi
+        
+        echo "✅ Site validation completed, data preserved!"
         return
     fi
     
@@ -310,7 +330,6 @@ create_site_if_needed() {
             echo "✅ Site 'localhost' created successfully!"
             bench --site localhost set-admin-password admin
             install_apps_to_site
-            bench update --reset
             bench --site localhost migrate
             break
         else
@@ -350,7 +369,7 @@ start_server() {
     echo "   ERPNext will be available at: http://localhost:8080"
     echo "   Default credentials: Administrator / admin"
     cd /app/frappe-bench
-    sudo chown -R frappe:frappe /var/log/supervisor/
+    
     # Check environment variable to determine which command to run
     echo "🔥 Starting in development mode with auto-reload..."
     # if command -v watchexec >/dev/null 2>&1; then
