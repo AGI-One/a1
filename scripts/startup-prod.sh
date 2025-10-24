@@ -78,10 +78,10 @@ setup_site_config() {
     cd /app/frappe-bench
     
     if ! id frappe >/dev/null 2>&1; then
-        useradd -m -s /bin/bash frappe
+        sudo useradd -m -s /bin/bash frappe
     fi
     
-    chown -R frappe:frappe /app/frappe-bench
+    sudo chown -R frappe:frappe /app/frappe-bench
     
     if [ -f /app/.env ]; then
         echo "📝 Updating configuration from .env..."
@@ -353,7 +353,7 @@ setup_production() {
     
     # Setup production with supervisor and nginx
     echo "🔧 Setting up production with supervisor and nginx..."
-    sudo -E env "PATH=$PATH" bench setup production frappe
+    sudo -E env "PATH=$PATH" bench setup production frappe --yes
     
     echo "✅ Production setup completed"
 }
@@ -366,22 +366,35 @@ start_production_server() {
     
     cd /app/frappe-bench
     
-    # Start supervisor to manage processes
-    echo "📊 Starting supervisor..."
+    # Start supervisord daemon first
+    echo "📊 Starting supervisord daemon..."
+    sudo service supervisor start || sudo supervisord -c /etc/supervisor/supervisord.conf
+    
+    # Wait a moment for supervisord to initialize
+    sleep 2
+    
+    # Now manage supervisor processes
+    echo "📊 Configuring supervisor processes..."
     sudo supervisorctl reread
     sudo supervisorctl update
     sudo supervisorctl start all
     
-    # Start nginx
-    echo "🌐 Starting nginx..."
-    sudo service nginx start
+    # Ensure nginx is running
+    echo "🌐 Ensuring nginx is running..."
+    sudo service nginx start || sudo service nginx restart
     
     echo "✅ Production server started successfully!"
     echo "📊 Check supervisor status: sudo supervisorctl status"
     echo "🌐 Check nginx status: sudo service nginx status"
     
+    # Show current status
+    echo ""
+    echo "📊 Current supervisor status:"
+    sudo supervisorctl status
+    
     # Keep container running by tailing logs
-    echo "📝 Following supervisor logs..."
+    echo ""
+    echo "📝 Following application logs..."
     tail -f /app/frappe-bench/logs/*.log
 }
 
