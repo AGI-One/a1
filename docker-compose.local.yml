@@ -1,9 +1,9 @@
 services:
-  erpnext-app:
+  erpnext-app-dev:
     build:
       context: .
       dockerfile: Dockerfile.local
-    container_name: erpnext-app
+    container_name: erpnext-app-dev
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -13,20 +13,20 @@ services:
     networks:
       - database
     ports:
-      - "8080:8000"
+      - "8081:8000"
     environment:
       - FRAPPE_APP_PORT=8000
       - FRAPPE_APP_WORKERS=1
       - FRAPPE_APP_ENABLE_DEBUG=1
       - ENVIRONMENT=development
     env_file:
-      - .env
+      - .env.dev
     volumes:
-      - agi-next:/app
+      - agi-next-dev:/app
       - ./modules:/app/modules
       - ./modules.json:/app/modules.json
 volumes:
-  agi-next:
+  agi-next-dev:
 
 networks:
   database:

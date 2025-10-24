@@ -2,3 +2,4 @@
 modules/*
 modules.json
 .DS_Store
+.env.dev
